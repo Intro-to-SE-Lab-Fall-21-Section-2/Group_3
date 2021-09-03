@@ -1,3 +1,7 @@
 Email client for group 3.
-Adam - VINNYKUHNEL
+Adam Kuhnel - VINNYKUHNEL
+Richie
+Johnny
+David
+
 
