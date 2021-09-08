@@ -4,3 +4,5 @@ Adam Kuhnel - vinnykuhnel Ricardo (Richie) Ledezma - R-Ledezma Johnny - jw5743 D
 
 We have decided to use the Python along with the Django Web Framework. We are undecided about what services or tools we will use to implement our SMTP and IMAP interfaces.
 
+Users will need the ability to login, edit and send emails, and check the contents of their inbox.
+
