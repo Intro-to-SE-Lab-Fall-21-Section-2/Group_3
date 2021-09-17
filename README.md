@@ -1,4 +1,4 @@
-An email client that uses a web-based user interface, a IMAP mailbox file, and transmits via SMTP
+An email client that uses a web-based user interface, a IMAP mailbox file, and transmits via SMTP.
 
 Adam Kuhnel - vinnykuhnel Ricardo (Richie) Ledezma - R-Ledezma Johnny - jw5743 David - davidpatel77
 
