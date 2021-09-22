@@ -5,7 +5,16 @@
     <h1>Enter your email and passwword</h1>
  
     <form action="{% url 'authentication' %}">
- 
+	
+	<select name="msp">
+	    <option value="Gmail" selected="selected">Gmail</option>
+	    <option value="Outlook">Outlook</option>
+	    <option value="Yahoo">Yahoo</option>
+	    <option value="Comcast">Comcast</option>
+	    <option value="Verizon">Verizon</option>
+	</select>
+	<br><br>
+	 
         <label>E-mail:</label>
         <input type="email" name="emailaddress">
         <br><br>
