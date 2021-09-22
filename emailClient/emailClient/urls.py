@@ -19,6 +19,7 @@ from inbox import views as v
 from login import views as l
 
 urlpatterns = [
-    path('inbox', v.inbox),
-    path('login', l.login),
+    path('inbox/', v.inbox),
+    path('', l.login),
+    path('login/', l.authentication, name='authentication')
     ]
