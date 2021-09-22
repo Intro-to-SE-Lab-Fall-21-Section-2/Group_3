@@ -6,5 +6,11 @@ We have decided to use the Python along with the Django Web Framework. We are un
 
 Users will need the ability to login into their profile and feel that their information is private. They will need to be able to compose, forward, reply, and attach attachemetns to their email. They will also need to be able to search through old emails in their inbox as well. The objective of the email client is for each function stated above to work properly and allow the user to get throught their tasks.
 
+This is our test email account to log in:
+
 exampleaccgrp3@gmail.com
 Group3secret
+
+To get this repo working, you will need python3 installed.
+you will also need the django web framework -> "pip install django".
+To run, go into the emailClient directory and type "python3 manage.py runserver"
