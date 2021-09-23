@@ -22,6 +22,7 @@ def authentication(request):
     email = request.GET.get('emailaddress')
     psswd = request.GET.get('password')
     msp = request.GET.get('msp')
-    chosenIMAP = servers[msp]
+    chosenMSP = servers[msp]
+    print(chosenMSP.imap)
     
     return render(request, 'login/authentication.html')
