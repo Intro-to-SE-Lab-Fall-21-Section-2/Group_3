@@ -1,15 +1,16 @@
 from django.shortcuts import render
 
 class IMAP_server:
-    def __init__(self, dns: str, port: int):
-        self.dns = dns
+    def __init__(self, imap: str, smtp: str, port: int):
+        self.imap = imap
+        self.smtp = smtp
         self.port = port
 
-servers = dict([("Gmail", IMAP_server("smtp.gmail.com", 587)),
-                ("Outlook", IMAP_server("smtp-mail.outlook.com", 587)),
-                ("Yahoo", IMAP_server("smtp.mail.yahoo.com", 587)),
-                ("Comcast", IMAP_server("smtp.comcast.net", 587)),
-                ("Verizon", IMAP_server("smtp.verizon.net", 465))])
+servers = dict([("Gmail", IMAP_server("imap.gmail.com", "smtp.gmail.com", 587)),
+                ("Outlook", IMAP_server("imap-mail.outlook.com", "smtp-mail.outlook.com", 587)),
+                ("Yahoo", IMAP_server("imap.mail.yahoo.com", "smtp.mail.yahoo.com", 587)),
+                ("Comcast", IMAP_server("imap.comcast.net", "smtp.comcast.net", 587)),
+                ("Verizon", IMAP_server("incoming.verizon.net", "smtp.verizon.net", 465))])
 
 
 # Create your views here.
