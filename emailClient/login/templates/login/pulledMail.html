@@ -1,0 +1,10 @@
+<h1>Inbox</h1>
+
+<li>
+{% for email in emails %}
+
+<a href={{ email.mailID }}>{{ email.subject }}</a>
+<br>
+
+{% endfor %}
+</li>

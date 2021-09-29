@@ -21,5 +21,7 @@ from login import views as l
 urlpatterns = [
     path('inbox/', v.inbox),
     path('', l.login),
-    path('login/', l.authentication, name='authentication')
+    path('admin/', admin.site.urls),
+    path('login/', l.authentication, name='authentication'),
+    path('login/<int:ID>', l.view, name='view')
     ]
