@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 import imapclient
 import pyzmail
+from .models import Email
 
 class IMAP_server:
     def __init__(self, imap: str, smtp: str, port: int):
@@ -24,11 +25,13 @@ def IMAPlogin(username: str, password: str, server: str) -> imapclient:
         return None
     return imapObj
 
-def mailRender(server: imapclient, mailID: int) -> str:
+def mailGetter(server: imapclient):
     server.select_folder('INBOX', readonly=True)
+    return server.search(['ALL'])
+
+def mailRender(server: imapclient, mailID: int):
     rawMessage = server.fetch([mailID], ['BODY[]', 'FLAGS'])
-    email = pyzmail.PyzMessage.factory(rawMessage[mailID][b'BODY[]'])
-    return email.html_part.get_payload().decode(email.html_part.charset)
+    return pyzmail.PyzMessage.factory(rawMessage[mailID][b'BODY[]'])
 
 # Create your views here.
 def login(request):
@@ -42,6 +45,25 @@ def authentication(request):
     server = IMAPlogin(email, psswd, chosenMSP.imap)
     if not server:    
         return render(request, 'login/authentication.html')
-    email = mailRender(server, 9)
+    emailIDList = mailGetter(server)
+    print(emailIDList)
+    for emailNum in emailIDList:
+        email = mailRender(server, emailNum)
+        html = email.html_part.get_payload().decode(email.html_part.charset)
+        sentBy = email.get_addresses('from')
+        sub = email.get_subject()
+        mail = Email()
+        mail.mailID = emailNum
+        mail.sender = sentBy
+        mail.subject = sub
+        mail.body = html
+        mail.save()
+        content = Email.objects.all() 
+
+        
     server.logout()
-    return HttpResponse(email)
+    return render(request, 'login/pulledMail.html', {'emails':content})
+
+def view(request, ID):
+    message = Email.objects.get(mailID=ID)
+    return HttpResponse(message.body)
