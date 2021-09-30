@@ -50,7 +50,7 @@ def authentication(request):
     for emailNum in emailIDList:
         email = mailRender(server, emailNum)
         html = email.html_part.get_payload().decode(email.html_part.charset)
-        sentBy = email.get_addresses('from')
+        sentBy = email.get_addresses('from')[0][-1]
         sub = email.get_subject()
         mail = Email()
         mail.mailID = emailNum

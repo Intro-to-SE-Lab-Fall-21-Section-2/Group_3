@@ -3,7 +3,7 @@
 <li>
 {% for email in emails %}
 
-<a href={{ email.mailID }}>{{ email.subject }}</a>
+<a href={{ email.mailID }}>From:  {{ email.sender }} Subject : {{ email.subject }}</a>
 <br>
 
 {% endfor %}
