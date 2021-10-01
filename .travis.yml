@@ -3,7 +3,7 @@ language: python3
 python:
         -"3.7"
 env:
-        - SECRET_KEY='GROUP#TEST'
+        - SECRET_KEY='GROUP3TEST'
 
 services:
         - db.sqlite3
