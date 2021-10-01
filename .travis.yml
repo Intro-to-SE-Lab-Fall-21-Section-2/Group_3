@@ -11,4 +11,4 @@ install: # => 6
   - pip install imapclient
   - pip install pyzmail
 script: # => 7
-  - python emailClient/manage.py test
+  - python3 emailClient/manage.py test
