@@ -5,7 +5,7 @@ python: # => 3
       - "3.7"
       - "3.8"
 env: # => 5
-      -DJA0NGO=3.2.7 DB=sqlite
+      -DJANGO=3.2.7 DB=sqlite
       
 install: # => 6
       - pip3 install -r requirements.txt
