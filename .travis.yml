@@ -7,8 +7,8 @@ python: # => 3
 env: # => 5
   -DJANGO=3.2 DB=sqlite
 install: # => 6
-  - pip3 install -r requirements.txt
-  - pip3 install imapclient
-  - pip3 install pyzmail
+  -pip install -r requirements.txt
+  -pip install imapclient
+  -pip install pyzmail
 script: # => 7
-  - python3 emailClient/manage.py test
+  -python emailClient/manage.py test
