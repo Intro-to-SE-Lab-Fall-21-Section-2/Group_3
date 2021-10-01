@@ -1,13 +1,12 @@
 os: linux # => 1
 language: python # => 2
 python: # => 3
-      - "3.6"
-      - "3.7"
-      - "3.8"
+  - "3.6"
+  - "3.7"
+  - "3.8"
 env: # => 5
-      -DJANGO=3.2.7 DB=sqlite
-      
+  -DJANGO=3.2 DB=sqlite
 install: # => 6
-      - pip install -r requirements.txt
+  - pip install -r requirements.txt
 script: # => 7
-      - python emailClient/manage.py test
+  - python emailClient/manage.py test
