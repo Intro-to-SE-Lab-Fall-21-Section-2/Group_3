@@ -1,14 +1,14 @@
 language: python3
 
 python:
-        -"3.8"
+      - "3.8"
 env:
-        - SECRET_KEY='GROUP3TEST'
+        SECRET_KEY='GROUP3TEST'
 
 services:
-        - db.sqlite3
+        db.sqlite3
 install:
-        - pipenv install
+        pipenv install
 script:
-        - python3 manage.py test
+       python3 manage.py test
 
