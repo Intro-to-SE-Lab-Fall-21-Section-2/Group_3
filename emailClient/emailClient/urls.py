@@ -20,6 +20,7 @@ from login import views as l
 
 urlpatterns = [
     path('inbox/', v.inbox),
+    path('login/home', l.login),
     path('', l.login),
     path('admin/', admin.site.urls),
     path('login/', l.authentication, name='authentication'),
