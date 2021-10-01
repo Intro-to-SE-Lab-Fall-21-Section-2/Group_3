@@ -9,6 +9,5 @@ env: # => 5
 install: # => 6
   - pip install -r requirements.txt
   - pip install imapclient
-  - pip install pyzmail
 script: # => 7
   - python emailClient/manage.py test
