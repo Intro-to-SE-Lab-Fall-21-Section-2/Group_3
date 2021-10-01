@@ -40,6 +40,12 @@ def login(request):
 def authentication(request):
     email = request.GET.get('emailaddress')
     psswd = request.GET.get('password')
+    if not email and not psswd:
+        return HttpResponse("You must enter an Email and a Password")
+    if not email:
+        return HttpResponse("You must enter an Email")
+    if not psswd:
+        return HttpResponse("You must enter an Password")
     msp = request.GET.get('msp')
     chosenMSP = servers[msp]
     server = IMAPlogin(email, psswd, chosenMSP.imap)
