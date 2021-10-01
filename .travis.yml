@@ -10,4 +10,4 @@ env: # => 5
 install: # => 6
       - pip install -r requirements.txt
 script: # => 7
-      python emailClient/manage.py test
+      - python emailClient/manage.py test
