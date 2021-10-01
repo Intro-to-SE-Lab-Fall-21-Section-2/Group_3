@@ -14,3 +14,4 @@ Group3secret
 To get this repo working, you will need python3 installed.
 you will also need the django web framework -> "pip install django".
 To run, go into the emailClient directory and type "python3 manage.py runserver"
+Use and Sequence diagrams
