@@ -18,7 +18,6 @@ from django.urls import path
 from login import views as l
 
 urlpatterns = [
-    path('inbox/', v.inbox),
     path('logout/', l.logout),
     path('login/home', l.authentication),
     path('', l.authentication),

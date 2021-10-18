@@ -53,7 +53,8 @@ def authentication(request):
         msp = request.POST.get('msp')
         
         request.session['username'] = email
-        print(request.session['username'])
+        request.session['password'] = psswd
+        request.session['msp'] = msp
         chosenMSP = servers[msp]
         server = IMAPlogin(email, psswd, chosenMSP.imap)
         if not server:    
@@ -101,6 +102,8 @@ def send(request):
 def logout(request):
     try:
         del request.session['username']
+        del request.session['password']
+        del request.session['msp']
     except KeyError:
         pass
     return HttpResponse("You're logged out.")
