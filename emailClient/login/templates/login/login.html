@@ -4,8 +4,8 @@
 <body>
     <h1>Enter your email and passwword</h1>
  
-    <form action="{% url 'authentication' %}">
-	
+    <form method='POST'>
+        {% csrf_token %}
 	<select name="msp">
 	    <option value="Gmail" selected="selected">Gmail</option>
 	    <option value="Outlook">Outlook</option>
