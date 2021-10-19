@@ -24,5 +24,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', l.authentication, name='authentication'),
     path('message/<int:ID>', l.view, name='view'),
+    path('forward/<int:ID>', l.forward, name='forward'),
     path('send/', l.send, name='send')
     ]

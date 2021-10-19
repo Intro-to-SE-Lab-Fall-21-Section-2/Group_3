@@ -4,7 +4,7 @@
 <body>
 <form action="{% url 'send' %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        <label for="recipients">Recipient(s):</label><br>
+        <label for="recipients">Recipient(s) (Seperate by "; "):</label><br>
         <input type="text" id="recipients" name="recipient"><br>
         <label for="subject">Subject:</label><br>
         <input type="text" id="subject" name="subject"><br>
@@ -13,7 +13,7 @@
 
         <textarea id="body" name="Body" rows="10" cols="150"></textarea><br>
         
-        <input type="file" name="Attatch"><br><br>
+        <input type="file" name="Attach" multiple><br><br>
         <input type="submit" value="Send" name="Submit">
 
     

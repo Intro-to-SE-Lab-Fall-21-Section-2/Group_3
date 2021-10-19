@@ -4,8 +4,12 @@ from django.core.files.storage import FileSystemStorage
 import imapclient
 import pyzmail
 import smtplib
-import random
-from email import message
+from os.path import basename
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
+from email.mime.base import MIMEBase
+from email import encoders
 from .models import Email
 
 
@@ -20,7 +24,7 @@ servers = dict([("Gmail", IMAP_server("imap.gmail.com", "smtp.gmail.com", 587)),
                 ("Outlook", IMAP_server("imap-mail.outlook.com", "smtp-mail.outlook.com", 587)),
                 ("Yahoo", IMAP_server("imap.mail.yahoo.com", "smtp.mail.yahoo.com", 587)),
                 ("Comcast", IMAP_server("imap.comcast.net", "smtp.comcast.net", 587)),
-                ("Verizon", IMAP_server("incoming.verizon.net", "smtp.verizon.net", 465))])
+                ("ATT", IMAP_server("imap.mail.att.net", "smtp.mail.att.net", 465))])
 
 def IMAPlogin(username: str, password: str, server: str) -> imapclient:
     imapObj = imapclient.IMAPClient(server, ssl=True)
@@ -65,11 +69,19 @@ def authentication(request):
             checkForMail = Email.objects.filter(recipient=email).filter(mailNum=emailNum)
             if not checkForMail:
                 parsedMessage = mailRender(server, emailNum)
+                
+                
+                try:
+                    bodyContent = parsedMessage.html_part.get_payload().decode(parsedMessage.html_part.charset)
+                except:
+                    bodyContent = parsedMessage.text_part.get_payload().decode(parsedMessage.text_part.charset)
+                
                 mail = Email(mailNum = emailNum,
                        sender = parsedMessage.get_addresses('from')[0][-1],
                        recipient = email,
-                       subject = parsedMessage.get_subject(),                        
-                       body = parsedMessage.html_part.get_payload().decode(parsedMessage.html_part.charset))
+                       subject = parsedMessage.get_subject(),
+                        body = bodyContent
+                       )
                 #store message in DB
                 mail.save()
         
@@ -88,16 +100,44 @@ def view(request, ID):
 def send(request):
     if request.method == 'POST':
         recipient = request.POST.get('recipient')
+        splitRecipients = recipient.split(sep = "; ")
         subject = request.POST.get('subject')
         body = request.POST.get('Body')
+        mspInfo: IMAP_server = servers[request.session['msp']]
+        msg = MIMEMultipart()
+        msg['from'] = request.session['username']
+        msg['to'] = splitRecipients[0]
+        msg['subject'] = subject
+        body = MIMEText(body, 'plain')
+        msg.attach(body)
+        
         if request.FILES:
-            uploadedFile = request.FILES['Attatch']
-            fs = FileSystemStorage()
-            name = fs.save(uploadedFile.name, uploadedFile)       
-
-    print(request.session['username'])
+            uploadedFiles = request.FILES.getlist('Attach')
+            print(uploadedFiles)
+            for uploadedFile in uploadedFiles:
+                fs = FileSystemStorage()
+                fs.save(uploadedFile.name, uploadedFile)
+                filename = fs.base_location + uploadedFile.name
+                with open(filename, 'rb') as f:
+                    part = MIMEBase('application', 'octet-stream')
+                    part.set_payload((f).read())
+                    encoders.encode_base64(part)
+                    part.add_header('Content-Disposition', 'attachment; filename="{}"'.format(basename(uploadedFile.name)))                
+                    msg.attach(part) 
+                fs.delete(uploadedFile.name)             
+            
+        
+        smtpConnection = smtplib.SMTP(mspInfo.smtp, mspInfo.port)
+        smtpConnection.ehlo()
+        smtpConnection.starttls()
+        smtpConnection.login(request.session['username'], request.session['password'])
+        smtpConnection.send_message(msg, from_addr=request.session['username'], to_addrs=splitRecipients)
+        smtpConnection.close()            
+    
     return render(request, 'login/compose.html')
 
+def forward(request, ID):
+    return HttpResponse("Enter Recipient(s)")
 
 def logout(request):
     try:

@@ -2,11 +2,14 @@
 <form action="send">
     <input type=Submit value=Compose>
 </form>
+<form action="logout">
+    <input type=Submit value=Logout>
+</form>
 
 <li>
 {% for email in emails %}
 
-<a href="message/{{ email.mailNum }}">From:  {{ email.sender }} Subject : {{ email.subject }}</a>
+<a href="message/{{ email.mailNum }}">From:  {{ email.sender }} Subject : {{ email.subject }}</a> <a href="forward/{{ email.mailNum }}">Forward</a>
 <br>
 
 {% endfor %}
