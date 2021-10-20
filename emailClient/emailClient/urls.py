@@ -26,5 +26,7 @@ urlpatterns = [
     path('message/<int:ID>', l.view, name='view'),
     path('forward/<int:ID>', l.forward, name='forward'),
     path('filter/', l.filter, name='filter'),
+    path('attach/files/<str:filename>/', l.download),
+    path('attach/<int:ID>', l.attach, name='attach'),
     path('send/', l.send, name='send')
     ]

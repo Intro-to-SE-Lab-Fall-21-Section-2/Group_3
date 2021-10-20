@@ -5,12 +5,14 @@ import imapclient
 import pyzmail
 import smtplib
 from os.path import basename
+from django.core.files.base import ContentFile
+import mimetypes
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.mime.base import MIMEBase
 from email import encoders
-from .models import Email
+from .models import Email, FeedFile
 
 
 class IMAP_server:
@@ -22,7 +24,7 @@ class IMAP_server:
 
 servers = dict([("Gmail", IMAP_server("imap.gmail.com", "smtp.gmail.com", 587)),
                 ("Outlook", IMAP_server("imap-mail.outlook.com", "smtp-mail.outlook.com", 587)),
-                ("Yahoo", IMAP_server("imap.mail.yahoo.com", "smtp.mail.yahoo.com", 587)),
+                ("Yahoo", IMAP_server("imap.mail.yahoo.com", "smtp.mail.yahoo.com", 993)),
                 ("Comcast", IMAP_server("imap.comcast.net", "smtp.comcast.net", 587)),
                 ("ATT", IMAP_server("imap.mail.att.net", "smtp.mail.att.net", 993))])
 
@@ -76,14 +78,28 @@ def authentication(request):
                 except:
                     bodyContent = parsedMessage.text_part.get_payload().decode(parsedMessage.text_part.charset)
                 
-                mail = Email(mailNum = emailNum,
-                       sender = parsedMessage.get_addresses('from')[0][-1],
-                       recipient = email,
-                       subject = parsedMessage.get_subject(),
-                        body = bodyContent
-                       )
+
+                mail = Email()
+                mail.mailNum = emailNum
+                mail.sender = parsedMessage.get_addresses('from')[0][-1]
+                mail.recipient = email
+                mail.subject = parsedMessage.get_subject()
+                mail.body = bodyContent
                 #store message in DB
                 mail.save()
+                
+                for mailpart in parsedMessage.mailparts:
+                    feed = FeedFile()
+                    if mailpart.filename:
+                        fileContent = ContentFile(mailpart.get_payload())
+                        feed.file.save(mailpart.filename, fileContent)
+                        mail.files.add(feed) 
+                mail.save()
+                
+
+                        
+                
+                
         
         content = Email.objects.filter(recipient=email)
       
@@ -93,7 +109,7 @@ def authentication(request):
         return render(request, 'login/login.html')
 
 
-def view(request, ID):
+def view(request, ID):    
     message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
     return HttpResponse(message.body)
 
@@ -138,6 +154,24 @@ def send(request):
 
 def forward(request, ID):
     return HttpResponse("Enter Recipient(s)")
+
+def attach(request, ID):
+    message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
+    feedFiles = message.files.all()
+    paths = []
+    for feed in feedFiles:
+        paths.append(feed.file)
+    return render(request, 'login/attach.html', {'files':paths})
+
+def download(request, filename):
+    fs = FileSystemStorage()
+    fullPath = fs.base_location + "files/" + filename
+    fd = open(fullPath, 'rb')
+    
+    mime_type, _ = mimetypes.guess_type(fullPath) 
+    response = HttpResponse(fd, content_type=mime_type)
+    response['Content-Disposition'] = "attachment; filename=%s" % filename
+    return response
 
 def filter(request):
     filterStr = request.GET.get('filter')

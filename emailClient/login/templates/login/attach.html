@@ -1,0 +1,10 @@
+<h2>Attachments:</h2>
+<body>
+<ul>
+{% for url in files %}
+
+<a href="{{ url.name }}">{{ url.name }}</a><br>
+
+{% endfor %}
+</ul>
+</body>
