@@ -10,12 +10,12 @@ This is our test email account to log in for Gmail:
 
 Username: exampleaccgrp3@gmail.com
 Password: Group3secret
----------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This is our test email account to log in for Outlook:
 
 Username: exampleyesgreen@outlook.com
 Password: Firefox1234
----------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
