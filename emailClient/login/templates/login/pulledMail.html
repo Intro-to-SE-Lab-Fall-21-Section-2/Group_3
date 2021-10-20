@@ -1,4 +1,8 @@
 <h1>Inbox</h1>
+<form action = "filter">
+    {% csrf_token %}
+    <input type="search" name="filter"><input type=Submit value=Search>
+</form>
 <form action="send">
     <input type=Submit value=Compose>
 </form>

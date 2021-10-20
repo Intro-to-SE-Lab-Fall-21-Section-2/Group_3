@@ -24,7 +24,7 @@ servers = dict([("Gmail", IMAP_server("imap.gmail.com", "smtp.gmail.com", 587)),
                 ("Outlook", IMAP_server("imap-mail.outlook.com", "smtp-mail.outlook.com", 587)),
                 ("Yahoo", IMAP_server("imap.mail.yahoo.com", "smtp.mail.yahoo.com", 587)),
                 ("Comcast", IMAP_server("imap.comcast.net", "smtp.comcast.net", 587)),
-                ("ATT", IMAP_server("imap.mail.att.net", "smtp.mail.att.net", 465))])
+                ("ATT", IMAP_server("imap.mail.att.net", "smtp.mail.att.net", 993))])
 
 def IMAPlogin(username: str, password: str, server: str) -> imapclient:
     imapObj = imapclient.IMAPClient(server, ssl=True)
@@ -138,6 +138,16 @@ def send(request):
 
 def forward(request, ID):
     return HttpResponse("Enter Recipient(s)")
+
+def filter(request):
+    filterStr = request.GET.get('filter')
+    print(filterStr)
+    contentSender = Email.objects.filter(recipient=request.session['username']).filter(sender__contains=filterStr)
+    contentSubject = Email.objects.filter(recipient=request.session['username']).filter(subject__contains=filterStr)
+    contentBody = Email.objects.filter(recipient=request.session['username']).filter(body__contains=filterStr)
+    content = contentSender | contentSubject | contentBody
+    return render(request, 'login/pulledMail.html', {'emails':content})
+
 
 def logout(request):
     try:
