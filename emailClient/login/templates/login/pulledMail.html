@@ -13,7 +13,7 @@
 <li>
 {% for email in emails %}
 
-<a href="message/{{ email.mailNum }}">From:  {{ email.sender }} Subject : {{ email.subject }}</a> <a href="forward/{{ email.mailNum }}">Forward</a> <a href="attach/{{ email.mailNum }}">attachment(s)</a>
+<a href="../message/{{ email.mailNum }}">From:  {{ email.sender }} Subject : {{ email.subject }}</a> <a href="../forward/{{ email.mailNum }}">Forward</a> <a href="../attach/{{ email.mailNum }}">attachment(s)->({{email.fileCount}})</a>
 <br>
 
 {% endfor %}

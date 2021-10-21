@@ -1,0 +1,12 @@
+<h2>Enter forward Recipient(s):</h2>
+
+<body>
+    <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <label for="recipients">Recipient(s) (Seperate by "; "):</label><br>    
+            <input type="text" id="recipients" name="recipient"><br>        
+            <input type="submit" value="Send" name="Submit">
+        
+        </form>
+    </body>

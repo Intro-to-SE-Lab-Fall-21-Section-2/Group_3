@@ -25,8 +25,8 @@ class IMAP_server:
 servers = dict([("Gmail", IMAP_server("imap.gmail.com", "smtp.gmail.com", 587)),
                 ("Outlook", IMAP_server("imap-mail.outlook.com", "smtp-mail.outlook.com", 587)),
                 ("Yahoo", IMAP_server("imap.mail.yahoo.com", "smtp.mail.yahoo.com", 993)),
-                ("Comcast", IMAP_server("imap.comcast.net", "smtp.comcast.net", 587)),
-                ("ATT", IMAP_server("imap.mail.att.net", "smtp.mail.att.net", 993))])
+                ("Comcast", IMAP_server("imap.comcast.net", "smtp.comcast.net", 993)),
+                ("ATT", IMAP_server("imap.att.yahoo.com", "smtp.mail.att.net", 993))])
 
 def IMAPlogin(username: str, password: str, server: str) -> imapclient:
     imapObj = imapclient.IMAPClient(server, ssl=True)
@@ -87,19 +87,16 @@ def authentication(request):
                 mail.body = bodyContent
                 #store message in DB
                 mail.save()
-                
+                counter = 0
                 for mailpart in parsedMessage.mailparts:
                     feed = FeedFile()
                     if mailpart.filename:
                         fileContent = ContentFile(mailpart.get_payload())
                         feed.file.save(mailpart.filename, fileContent)
                         mail.files.add(feed) 
-                mail.save()
-                
-
-                        
-                
-                
+                        counter = counter + 1
+                mail.fileCount = counter
+                mail.save()                         
         
         content = Email.objects.filter(recipient=email)
       
@@ -114,6 +111,11 @@ def view(request, ID):
     return HttpResponse(message.body)
 
 def send(request):
+    try:
+        request.session['username']
+    except:
+        return render(request, 'login/login.html')
+
     if request.method == 'POST':
         recipient = request.POST.get('recipient')
         splitRecipients = recipient.split(sep = "; ")
@@ -126,7 +128,7 @@ def send(request):
         msg['subject'] = subject
         body = MIMEText(body, 'plain')
         msg.attach(body)
-        
+         
         if request.FILES:
             uploadedFiles = request.FILES.getlist('Attach')
             print(uploadedFiles)
@@ -140,20 +142,49 @@ def send(request):
                     encoders.encode_base64(part)
                     part.add_header('Content-Disposition', 'attachment; filename="{}"'.format(basename(uploadedFile.name)))                
                     msg.attach(part) 
-                fs.delete(uploadedFile.name)             
+                    fs.delete(uploadedFile.name)             
+                
             
-        
         smtpConnection = smtplib.SMTP(mspInfo.smtp, mspInfo.port)
         smtpConnection.ehlo()
         smtpConnection.starttls()
         smtpConnection.login(request.session['username'], request.session['password'])
         smtpConnection.send_message(msg, from_addr=request.session['username'], to_addrs=splitRecipients)
         smtpConnection.close()            
-    
+        
     return render(request, 'login/compose.html')
 
+
 def forward(request, ID):
-    return HttpResponse("Enter Recipient(s)")
+    if request.method == 'POST':
+        message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
+        recipient = request.POST.get('recipient')
+        splitRecipients = recipient.split(sep = "; ")
+        subject = message.subject
+        body = message.body
+        mspInfo: IMAP_server = servers[request.session['msp']]
+        msg = MIMEMultipart()
+        msg['from'] = request.session['username']
+        msg['to'] = splitRecipients[0]
+        msg['subject'] = subject
+        body = MIMEText(body, 'plain')
+        msg.attach(body)
+        attachments = message.files.all()
+        for feed in attachments:
+            with open(feed.file.path, 'rb') as f:
+                    part = MIMEBase('application', 'octet-stream')
+                    part.set_payload((f).read())
+                    encoders.encode_base64(part)
+                    part.add_header('Content-Disposition', 'attachment; filename="{}"'.format(basename(feed.file.name)))                
+                    msg.attach(part) 
+        smtpConnection = smtplib.SMTP(mspInfo.smtp, mspInfo.port)
+        smtpConnection.ehlo()
+        smtpConnection.starttls()
+        smtpConnection.login(request.session['username'], request.session['password'])
+        smtpConnection.send_message(msg, from_addr=request.session['username'], to_addrs=splitRecipients)
+        smtpConnection.close()
+
+    return render(request, 'login/forward.html')
 
 def attach(request, ID):
     message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
@@ -190,4 +221,4 @@ def logout(request):
         del request.session['msp']
     except KeyError:
         pass
-    return HttpResponse("You're logged out.")
+    return render(request, 'login/logout.html')

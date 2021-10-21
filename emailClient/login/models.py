@@ -12,5 +12,6 @@ class Email(models.Model):
    subject = models.CharField(max_length=1000)
    body = models.TextField()
    files=models.ManyToManyField(FeedFile)
+   fileCount = models.SmallIntegerField(default=0)
 
 
