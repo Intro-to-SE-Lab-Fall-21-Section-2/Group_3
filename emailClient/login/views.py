@@ -106,11 +106,17 @@ def authentication(request):
         return render(request, 'login/login.html')
 
 
-def view(request, ID):    
+def view(request, ID): 
+    #check if user is logged in, else return to login page
+    try:
+        request.session['username']
+    except:
+        return render(request, 'login/login.html')   
     message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
     return HttpResponse(message.body)
 
 def send(request):
+    #check if user is logged in, else return to login page
     try:
         request.session['username']
     except:
@@ -145,17 +151,26 @@ def send(request):
                     fs.delete(uploadedFile.name)             
                 
             
-        smtpConnection = smtplib.SMTP(mspInfo.smtp, mspInfo.port)
-        smtpConnection.ehlo()
-        smtpConnection.starttls()
-        smtpConnection.login(request.session['username'], request.session['password'])
-        smtpConnection.send_message(msg, from_addr=request.session['username'], to_addrs=splitRecipients)
-        smtpConnection.close()            
+        try:
+            smtpConnection = smtplib.SMTP(mspInfo.smtp, mspInfo.port)
+            smtpConnection.ehlo()
+            smtpConnection.starttls()
+            smtpConnection.login(request.session['username'], request.session['password'])
+            smtpConnection.send_message(msg, from_addr=request.session['username'], to_addrs=splitRecipients)
+            smtpConnection.close()  
+        except:
+            return render(request, 'login/compose.html')          
         
     return render(request, 'login/compose.html')
 
 
 def forward(request, ID):
+    #check if user is logged in, else return to login page
+    try:
+        request.session['username']
+    except:
+        return render(request, 'login/login.html')
+
     if request.method == 'POST':
         message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
         recipient = request.POST.get('recipient')
@@ -177,16 +192,25 @@ def forward(request, ID):
                     encoders.encode_base64(part)
                     part.add_header('Content-Disposition', 'attachment; filename="{}"'.format(basename(feed.file.name)))                
                     msg.attach(part) 
-        smtpConnection = smtplib.SMTP(mspInfo.smtp, mspInfo.port)
-        smtpConnection.ehlo()
-        smtpConnection.starttls()
-        smtpConnection.login(request.session['username'], request.session['password'])
-        smtpConnection.send_message(msg, from_addr=request.session['username'], to_addrs=splitRecipients)
-        smtpConnection.close()
+        
+        try:
+            smtpConnection = smtplib.SMTP(mspInfo.smtp, mspInfo.port)
+            smtpConnection.ehlo()
+            smtpConnection.starttls()
+            smtpConnection.login(request.session['username'], request.session['password'])
+            smtpConnection.send_message(msg, from_addr=request.session['username'], to_addrs=splitRecipients)
+            smtpConnection.close()
+        except:
+            return render(request, 'login/forward.html')
 
     return render(request, 'login/forward.html')
 
 def attach(request, ID):
+    #check if user is logged in, else return to login page
+    try:
+        request.session['username']
+    except:
+        return render(request, 'login/login.html')
     message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
     feedFiles = message.files.all()
     paths = []
@@ -195,9 +219,17 @@ def attach(request, ID):
     return render(request, 'login/attach.html', {'files':paths})
 
 def download(request, filename):
-    fs = FileSystemStorage()
-    fullPath = fs.base_location + "files/" + filename
-    fd = open(fullPath, 'rb')
+    #check if user is logged in, else return to login page
+    try:
+        request.session['username']
+    except:
+        return render(request, 'login/login.html')
+    try:
+        fs = FileSystemStorage()
+        fullPath = fs.base_location + "files/" + filename
+        fd = open(fullPath, 'rb')
+    except:
+        return HttpResponse("Invalid download file")
     
     mime_type, _ = mimetypes.guess_type(fullPath) 
     response = HttpResponse(fd, content_type=mime_type)
@@ -205,8 +237,11 @@ def download(request, filename):
     return response
 
 def filter(request):
+    try:
+        request.session['username']
+    except:
+        return render(request, 'login/login.html')
     filterStr = request.GET.get('filter')
-    print(filterStr)
     contentSender = Email.objects.filter(recipient=request.session['username']).filter(sender__contains=filterStr)
     contentSubject = Email.objects.filter(recipient=request.session['username']).filter(subject__contains=filterStr)
     contentBody = Email.objects.filter(recipient=request.session['username']).filter(body__contains=filterStr)
@@ -215,10 +250,11 @@ def filter(request):
 
 
 def logout(request):
+    
     try:
         del request.session['username']
         del request.session['password']
         del request.session['msp']
-    except KeyError:
+    except:
         pass
     return render(request, 'login/logout.html')
