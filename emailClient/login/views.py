@@ -14,20 +14,22 @@ from email.mime.base import MIMEBase
 from email import encoders
 from .models import Email, FeedFile
 
-
+# hold the details for logging into a msp
 class IMAP_server:
     def __init__(self, imap: str, smtp: str, port: int):
         self.imap = imap
         self.smtp = smtp
         self.port = port
 
-
+#dictionary relating msp to related servers
 servers = dict([("Gmail", IMAP_server("imap.gmail.com", "smtp.gmail.com", 587)),
                 ("Outlook", IMAP_server("imap-mail.outlook.com", "smtp-mail.outlook.com", 587)),
                 ("Yahoo", IMAP_server("imap.mail.yahoo.com", "smtp.mail.yahoo.com", 993)),
                 ("Comcast", IMAP_server("imap.comcast.net", "smtp.comcast.net", 993)),
                 ("ATT", IMAP_server("imap.att.yahoo.com", "smtp.mail.att.net", 993))])
 
+
+#login to an imap server
 def IMAPlogin(username: str, password: str, server: str) -> imapclient:
     imapObj = imapclient.IMAPClient(server, ssl=True)
     try:
@@ -37,15 +39,17 @@ def IMAPlogin(username: str, password: str, server: str) -> imapclient:
         return None
     return imapObj
 
+#return valid mail ids for certain account
 def mailGetter(server: imapclient):
     server.select_folder('INBOX', readonly=True)
     return server.search(['ALL'])
 
+#fetch a specific email from imap server
 def mailRender(server: imapclient, mailID: int):
     rawMessage = server.fetch([mailID], ['BODY[]', 'FLAGS'])
     return pyzmail.PyzMessage.factory(rawMessage[mailID][b'BODY[]'])
 
-
+#Handle logging in when user submits login form
 def authentication(request):
     if request.method == 'POST':
         email = request.POST.get('emailaddress')
@@ -57,28 +61,28 @@ def authentication(request):
         if not psswd:
             return HttpResponse("You must enter an Password")
         msp = request.POST.get('msp')
-        
+
+        #store cookie for user, will need info later 
         request.session['username'] = email
         request.session['password'] = psswd
         request.session['msp'] = msp
         chosenMSP = servers[msp]
         server = IMAPlogin(email, psswd, chosenMSP.imap)
         if not server:    
+            #if IMAP login fails, return a login failed message
             return render(request, 'login/authentication.html')
         emailIDList = mailGetter(server)
-        print(emailIDList)
+        #loop through all emails fetched
         for emailNum in emailIDList:
             checkForMail = Email.objects.filter(recipient=email).filter(mailNum=emailNum)
             if not checkForMail:
-                parsedMessage = mailRender(server, emailNum)
-                
+                parsedMessage = mailRender(server, emailNum)               
                 
                 try:
                     bodyContent = parsedMessage.html_part.get_payload().decode(parsedMessage.html_part.charset)
                 except:
                     bodyContent = parsedMessage.text_part.get_payload().decode(parsedMessage.text_part.charset)
-                
-
+                #set field contents
                 mail = Email()
                 mail.mailNum = emailNum
                 mail.sender = parsedMessage.get_addresses('from')[0][-1]
@@ -88,6 +92,7 @@ def authentication(request):
                 #store message in DB
                 mail.save()
                 counter = 0
+                #parse files and store them in MEDIA_ROOT
                 for mailpart in parsedMessage.mailparts:
                     feed = FeedFile()
                     if mailpart.filename:
@@ -103,9 +108,10 @@ def authentication(request):
         server.logout()
         return render(request, 'login/pulledMail.html', {'emails':content})
     else:
+        #return login page if not POST
         return render(request, 'login/login.html')
 
-
+#show the html version of body
 def view(request, ID): 
     #check if user is logged in, else return to login page
     try:
@@ -115,6 +121,7 @@ def view(request, ID):
     message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
     return HttpResponse(message.body)
 
+#compose and transmit mail
 def send(request):
     #check if user is logged in, else return to login page
     try:
@@ -123,6 +130,7 @@ def send(request):
         return render(request, 'login/login.html')
 
     if request.method == 'POST':
+        #set fields to construct email
         recipient = request.POST.get('recipient')
         splitRecipients = recipient.split(sep = "; ")
         subject = request.POST.get('subject')
@@ -135,6 +143,7 @@ def send(request):
         body = MIMEText(body, 'plain')
         msg.attach(body)
          
+        #If there are files attached, attach them to MIME message
         if request.FILES:
             uploadedFiles = request.FILES.getlist('Attach')
             print(uploadedFiles)
@@ -150,7 +159,7 @@ def send(request):
                     msg.attach(part) 
                     fs.delete(uploadedFile.name)             
                 
-            
+            #connect to SMTP server and transmit the message
         try:
             smtpConnection = smtplib.SMTP(mspInfo.smtp, mspInfo.port)
             smtpConnection.ehlo()
@@ -163,7 +172,7 @@ def send(request):
         
     return render(request, 'login/compose.html')
 
-
+#forward email to list of clients 
 def forward(request, ID):
     #check if user is logged in, else return to login page
     try:
@@ -192,7 +201,7 @@ def forward(request, ID):
                     encoders.encode_base64(part)
                     part.add_header('Content-Disposition', 'attachment; filename="{}"'.format(basename(feed.file.name)))                
                     msg.attach(part) 
-        
+        #connect to SMTP server and transmit the message
         try:
             smtpConnection = smtplib.SMTP(mspInfo.smtp, mspInfo.port)
             smtpConnection.ehlo()
@@ -204,7 +213,7 @@ def forward(request, ID):
             return render(request, 'login/forward.html')
 
     return render(request, 'login/forward.html')
-
+#check the attachments for email
 def attach(request, ID):
     #check if user is logged in, else return to login page
     try:
@@ -217,7 +226,7 @@ def attach(request, ID):
     for feed in feedFiles:
         paths.append(feed.file)
     return render(request, 'login/attach.html', {'files':paths})
-
+#clickable link that allows user to download files
 def download(request, filename):
     #check if user is logged in, else return to login page
     try:
@@ -236,6 +245,7 @@ def download(request, filename):
     response['Content-Disposition'] = "attachment; filename=%s" % filename
     return response
 
+#search in sender, subject, and body for string
 def filter(request):
     try:
         request.session['username']
@@ -248,7 +258,7 @@ def filter(request):
     content = contentSender | contentSubject | contentBody
     return render(request, 'login/pulledMail.html', {'emails':content})
 
-
+#logout by deleting cookie session for user
 def logout(request):
     
     try:
