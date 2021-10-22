@@ -55,11 +55,11 @@ def authentication(request):
         email = request.POST.get('emailaddress')
         psswd = request.POST.get('password')
         if not email and not psswd:
-            return HttpResponse("You must enter an Email and a Password")
+            return render(request, 'login/authentication.html')
         if not email:
-            return HttpResponse("You must enter an Email")
+            return render(request, 'login/authentication.html')
         if not psswd:
-            return HttpResponse("You must enter an Password")
+            return render(request, 'login/authentication.html')
         msp = request.POST.get('msp')
 
         #store cookie for user, will need info later 
