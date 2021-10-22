@@ -10,11 +10,21 @@
     <input type=Submit value=Logout>
 </form>
 
-<li>
+
 {% for email in emails %}
 
-<a href="../message/{{ email.mailNum }}">From:  {{ email.sender }} Subject : {{ email.subject }}</a> <a href="../forward/{{ email.mailNum }}">Forward</a> <a href="../attach/{{ email.mailNum }}">attachment(s)->({{email.fileCount}})</a>
+<p style ="padding:10px 4px 2px 4px; color: #000; background-color: #ffffff; border: #dddddd 2px solid;"
+                
+<a href="../message/{{ email.mailNum }}"> 
+<body/>  <font size="+1"> • </font> From:  {{ email.sender }} Subject : {{ email.subject }}</a> 
+<body>  <body/>  
+<font size="+2"> | </font> <a href="../forward/{{ email.mailNum }}"> Forward</a> 
+
+<body/>  <font size="+2"> | </font> 
+
+<a href="../attach/{{ email.mailNum }}">attachment(s)->({{email.fileCount}})</a>
 <br>
 
+
 {% endfor %}
-</li>
+
