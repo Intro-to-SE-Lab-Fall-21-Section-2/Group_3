@@ -21,5 +21,7 @@ Password: Firefox1234
 
 To get this repo working, you will need python3 installed.
 you will also need the django web framework -> "pip install django".
+Next you will need to run "pip install pyzmail36" and "pip install imapclient".
+Before running, you must create migrations. Type "python3 manage.py makemigrations" and then "python3 manage.py migrate".
 To run, go into the emailClient directory and type "python3 manage.py runserver"
 Use and Sequence diagrams
