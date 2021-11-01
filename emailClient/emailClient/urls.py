@@ -28,5 +28,10 @@ urlpatterns = [
     path('filter/', l.filter, name='filter'),
     path('attach/files/<str:filename>/', l.download),
     path('attach/<int:ID>', l.attach, name='attach'),
-    path('send/', l.send, name='send')
+    path('send/', l.send, name='send'),
+    path('trash/', l.trash),
+    path('trash/<int:ID>', l.moveTrash),
+    path('fromTrash/<int:ID>', l.fromTrash),
+    path('delete/<int:ID>', l.delete),
+    path('inbox', l.inbox)
     ]

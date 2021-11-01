@@ -20,4 +20,9 @@
     </form>
 </body>
 {% endblock %}
+
+<form action="../inbox" method="post">
+    {% csrf_token %}
+    <input type=Submit value="Inbox">
+</form>
 </html>

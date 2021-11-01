@@ -103,7 +103,7 @@ def authentication(request):
                 mail.fileCount = counter
                 mail.save()                         
         
-        content = Email.objects.filter(recipient=email)
+        content = Email.objects.filter(recipient=email).filter(trashFolder=False)
       
         server.logout()
         return render(request, 'login/pulledMail.html', {'emails':content})
@@ -256,6 +256,7 @@ def filter(request):
     contentSubject = Email.objects.filter(recipient=request.session['username']).filter(subject__contains=filterStr)
     contentBody = Email.objects.filter(recipient=request.session['username']).filter(body__contains=filterStr)
     content = contentSender | contentSubject | contentBody
+    request.path = "/"
     return render(request, 'login/pulledMail.html', {'emails':content})
 
 #logout by deleting cookie session for user
@@ -268,3 +269,64 @@ def logout(request):
     except:
         pass
     return render(request, 'login/logout.html')
+
+
+#load the trash folder
+def trash(request):
+    try:
+        request.session['username']
+    except:
+        return render(request, 'login/login.html')
+    
+    request.path = "/"
+    
+    content = Email.objects.filter(recipient=request.session['username']).filter(trashFolder=True)
+    return render(request, 'login/trash.html', {'emails':content})
+
+def moveTrash(request, ID):
+    try:
+        request.session['username']
+    except:
+        return render(request, 'login/login.html')
+    
+    request.path = "/"
+    message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
+    message.trashFolder = True
+    message.save()
+
+    content = Email.objects.filter(recipient=request.session['username']).filter(trashFolder=False)
+    return render(request, 'login/pulledMail.html', {'emails':content})
+
+def fromTrash(request, ID):
+    try:
+        request.session['username']
+    except:
+        return render(request, 'login/login.html')
+
+    request.path = "/"
+    message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
+    message.trashFolder = False
+    message.save()
+
+    content = Email.objects.filter(recipient=request.session['username']).filter(trashFolder=True)
+    return render(request, 'login/trash.html', {'emails':content})
+
+def delete(request, ID):
+    try:
+        request.session['username']
+    except:
+        return render(request, 'login/login.html')
+    
+    message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
+    message.delete()
+    content = Email.objects.filter(recipient=request.session['username']).filter(trashFolder=True)
+    request.path = "/trash/"
+    return render(request, 'login/trash.html', {'emails':content})
+
+def inbox(request):
+    request.path = "/"
+    content = Email.objects.filter(recipient=request.session['username']).filter(trashFolder=False)
+    return render(request, 'login/pulledMail.html', {'emails':content})
+
+
+

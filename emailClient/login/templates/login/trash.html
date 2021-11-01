@@ -1,18 +1,7 @@
-<h1>Inbox</h1>
-<form action = "filter">
+<form action="../inbox" method="post">
     {% csrf_token %}
-    <input type="search" name="filter"><input type=Submit value=Search>
+    <input type=Submit value="Inbox">
 </form>
-<form action="send">
-    <input type=Submit value=Compose>
-</form>
-<form action="logout">
-    <input type=Submit value=Logout>
-</form>
-<form action="../trash">
-    <input type=Submit value="Trash Folder">
-</form>
-
 
 {% for email in emails %}
 
@@ -29,9 +18,12 @@
 
 <body/>  <font size="+2"> | </font> 
 
-<a href="../trash/{{ email.mailNum }}">Move to Trash</a>
+<a href="../fromTrash/{{ email.mailNum }}">Move to Inbox</a>
+<br>
+<body/>  <font size="+2"> | </font> 
+
+<a href="../delete/{{ email.mailNum }}">Delete</a>
 <br>
 
 
 {% endfor %}
-

@@ -13,5 +13,6 @@ class Email(models.Model):
    body = models.TextField()
    files=models.ManyToManyField(FeedFile)
    fileCount = models.SmallIntegerField(default=0)
+   trashFolder = models.BooleanField(default=False)
 
 
