@@ -12,7 +12,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.mime.base import MIMEBase
 from email import encoders
-from .models import Email, FeedFile
+from .models import Email, FeedFile, Draft
 
 # hold the details for logging into a msp
 class IMAP_server:
@@ -131,45 +131,56 @@ def send(request):
 
     if request.method == 'POST':
         #set fields to construct email
-        recipient = request.POST.get('recipient')
-        splitRecipients = recipient.split(sep = "; ")
-        subject = request.POST.get('subject')
-        body = request.POST.get('Body')
-        mspInfo: IMAP_server = servers[request.session['msp']]
-        msg = MIMEMultipart()
-        msg['from'] = request.session['username']
-        msg['to'] = splitRecipients[0]
-        msg['subject'] = subject
-        body = MIMEText(body, 'plain')
-        msg.attach(body)
-         
-        #If there are files attached, attach them to MIME message
-        if request.FILES:
-            uploadedFiles = request.FILES.getlist('Attach')
-            print(uploadedFiles)
-            for uploadedFile in uploadedFiles:
-                fs = FileSystemStorage()
-                fs.save(uploadedFile.name, uploadedFile)
-                filename = fs.base_location + uploadedFile.name
-                with open(filename, 'rb') as f:
-                    part = MIMEBase('application', 'octet-stream')
-                    part.set_payload((f).read())
-                    encoders.encode_base64(part)
-                    part.add_header('Content-Disposition', 'attachment; filename="{}"'.format(basename(uploadedFile.name)))                
-                    msg.attach(part) 
-                    fs.delete(uploadedFile.name)             
-                
-            #connect to SMTP server and transmit the message
-        try:
-            smtpConnection = smtplib.SMTP(mspInfo.smtp, mspInfo.port)
-            smtpConnection.ehlo()
-            smtpConnection.starttls()
-            smtpConnection.login(request.session['username'], request.session['password'])
-            smtpConnection.send_message(msg, from_addr=request.session['username'], to_addrs=splitRecipients)
-            smtpConnection.close()  
-        except:
-            return render(request, 'login/compose.html')          
-        
+        if request.POST.get('action') == "Send":
+            recipient = request.POST.get('recipient')
+            splitRecipients = recipient.split(sep = "; ")
+            subject = request.POST.get('subject')
+            body = request.POST.get('Body')
+            mspInfo: IMAP_server = servers[request.session['msp']]
+            msg = MIMEMultipart()
+            msg['from'] = request.session['username']
+            msg['to'] = splitRecipients[0]
+            msg['subject'] = subject
+            body = MIMEText(body, 'plain')
+            msg.attach(body)
+            
+            #If there are files attached, attach them to MIME message
+            if request.FILES:
+                uploadedFiles = request.FILES.getlist('Attach')
+                print(uploadedFiles)
+                for uploadedFile in uploadedFiles:
+                    fs = FileSystemStorage()
+                    fs.save(uploadedFile.name, uploadedFile)
+                    filename = fs.base_location + uploadedFile.name
+                    with open(filename, 'rb') as f:
+                        part = MIMEBase('application', 'octet-stream')
+                        part.set_payload((f).read())
+                        encoders.encode_base64(part)
+                        part.add_header('Content-Disposition', 'attachment; filename="{}"'.format(basename(uploadedFile.name)))                
+                        msg.attach(part) 
+                        fs.delete(uploadedFile.name)             
+                    
+                #connect to SMTP server and transmit the message
+            try:
+                smtpConnection = smtplib.SMTP(mspInfo.smtp, mspInfo.port)
+                smtpConnection.ehlo()
+                smtpConnection.starttls()
+                smtpConnection.login(request.session['username'], request.session['password'])
+                smtpConnection.send_message(msg, from_addr=request.session['username'], to_addrs=splitRecipients)
+                smtpConnection.close()  
+            except:
+                return render(request, 'login/compose.html') 
+        if request.POST.get('action') == "Save Draft":
+            recipient = request.POST.get('recipient')
+            subjectField = request.POST.get('subject')
+            bodyField = request.POST.get('Body')
+            draft = Draft()
+            draft.recipients = recipient
+            draft.subject = subjectField
+            draft.body = bodyField
+            draft.user = request.session['username']
+            draft.save()
+
     return render(request, 'login/compose.html')
 
 #forward email to list of clients 
@@ -327,6 +338,15 @@ def inbox(request):
     request.path = "/"
     content = Email.objects.filter(recipient=request.session['username']).filter(trashFolder=False)
     return render(request, 'login/pulledMail.html', {'emails':content})
+
+def drafts(request):
+    drafts = Draft.objects.filter(user=request.session['username'])
+    return render(request, 'login/drafts.html', {'drafts':drafts})
+
+def draftCompose(request, ID):
+    request.path = "/"
+    draft = Draft.objects.filter(user=request.session['username']).filter(pk=ID)
+    return render(request, 'login/draftCompose.html', {'draft':draft})
 
 
 

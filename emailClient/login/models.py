@@ -16,3 +16,8 @@ class Email(models.Model):
    trashFolder = models.BooleanField(default=False)
 
 
+class Draft(models.Model):
+   user = models.CharField(max_length=256)
+   recipients = models.CharField(max_length=1000)
+   subject = models.CharField(max_length=1000)
+   body = models.TextField()

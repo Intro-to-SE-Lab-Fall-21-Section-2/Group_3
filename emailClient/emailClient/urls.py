@@ -33,5 +33,7 @@ urlpatterns = [
     path('trash/<int:ID>', l.moveTrash),
     path('fromTrash/<int:ID>', l.fromTrash),
     path('delete/<int:ID>', l.delete),
+    path('drafts/', l.drafts),
+    path('draft/<int:ID>', l.draftCompose),
     path('inbox', l.inbox)
     ]
