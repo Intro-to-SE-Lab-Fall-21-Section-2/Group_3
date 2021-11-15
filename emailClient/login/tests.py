@@ -72,3 +72,54 @@ class clientTestCase(TestCase):
         request.user = AnonymousUser()
         response = logout(request)
         self.assertEqual(response.status_code, 200)
+    
+    #test cases for added draft and trash functionality
+    
+    #make sure request works when no drafts are found in db
+    def test_drafts(self):
+        request = HttpRequest()
+        middleware = SessionMiddleware()
+        middleware.process_request(request)
+        request.session['username'] = "TestAccount"
+        response = drafts(request)
+        self.assertEqual(response.status_code, 200)
+
+    #make sure invalid db primary key does not cause failure
+    def test_draftCompose(self):
+        request = HttpRequest()
+        id = -10
+        middleware = SessionMiddleware()
+        middleware.process_request(request)
+        request.session['username'] = "TestAccount"
+        
+        response = draftCompose(request, id)
+        self.assertEqual(response.status_code, 200)
+    
+    #make sure response succeeds with empty query
+    def test_trash(self):
+        request = HttpRequest()
+        middleware = SessionMiddleware()
+        middleware.process_request(request)
+        request.session['username'] = "TestAccount"
+        response = trash(request)
+        self.assertEqual(response.status_code, 200)
+    
+    #handle empty queryset properly
+    def test_moveTrash(self):
+        request = HttpRequest()
+        middleware = SessionMiddleware()
+        middleware.process_request(request)
+        request.session['username'] = "TestAccount"
+        id = -17
+        response = moveTrash(request, id)
+        self.assertEqual(response.status_code, 200)
+
+    #handle empty queryset properly
+    def test_fromTrash(self):
+        request = HttpRequest()
+        middleware = SessionMiddleware()
+        middleware.process_request(request)
+        request.session['username'] = "TestAccount"
+        id = -17
+        response = fromTrash(request, id)
+        self.assertEqual(response.status_code, 200)

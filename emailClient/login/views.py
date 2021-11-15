@@ -301,9 +301,10 @@ def moveTrash(request, ID):
         return render(request, 'login/login.html')
     
     request.path = "/"
-    message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
-    message.trashFolder = True
-    message.save()
+    message = Email.objects.filter(recipient=request.session['username']).filter(mailNum=ID)
+    if message:
+        message.trashFolder = True
+        message.save()
 
     content = Email.objects.filter(recipient=request.session['username']).filter(trashFolder=False)
     return render(request, 'login/pulledMail.html', {'emails':content})
@@ -315,9 +316,10 @@ def fromTrash(request, ID):
         return render(request, 'login/login.html')
 
     request.path = "/"
-    message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
-    message.trashFolder = False
-    message.save()
+    message = Email.objects.filter(recipient=request.session['username']).filter(mailNum=ID)
+    if message:
+        message.trashFolder = False
+        message.save()
 
     content = Email.objects.filter(recipient=request.session['username']).filter(trashFolder=True)
     return render(request, 'login/trash.html', {'emails':content})
@@ -335,15 +337,30 @@ def delete(request, ID):
     return render(request, 'login/trash.html', {'emails':content})
 
 def inbox(request):
+    try:
+        request.session['username']
+    except:
+        return render(request, 'login/login.html')
+
     request.path = "/"
     content = Email.objects.filter(recipient=request.session['username']).filter(trashFolder=False)
     return render(request, 'login/pulledMail.html', {'emails':content})
 
 def drafts(request):
+    try:
+        request.session['username']
+    except:
+        return render(request, 'login/login.html')
+
     drafts = Draft.objects.filter(user=request.session['username'])
     return render(request, 'login/drafts.html', {'drafts':drafts})
 
 def draftCompose(request, ID):
+    try:
+        request.session['username']
+    except:
+        return render(request, 'login/login.html')
+
     request.path = "/"
     draft = Draft.objects.filter(user=request.session['username']).filter(pk=ID)
     return render(request, 'login/draftCompose.html', {'draft':draft})
