@@ -301,10 +301,12 @@ def moveTrash(request, ID):
         return render(request, 'login/login.html')
     
     request.path = "/"
-    message = Email.objects.filter(recipient=request.session['username']).filter(mailNum=ID)
-    if message:
+    try:
+        message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
         message.trashFolder = True
         message.save()
+    except:
+        pass
 
     content = Email.objects.filter(recipient=request.session['username']).filter(trashFolder=False)
     return render(request, 'login/pulledMail.html', {'emails':content})
@@ -316,10 +318,12 @@ def fromTrash(request, ID):
         return render(request, 'login/login.html')
 
     request.path = "/"
-    message = Email.objects.filter(recipient=request.session['username']).filter(mailNum=ID)
-    if message:
+    try:
+        message = Email.objects.filter(recipient=request.session['username']).get(mailNum=ID)
         message.trashFolder = False
         message.save()
+    except:
+        pass
 
     content = Email.objects.filter(recipient=request.session['username']).filter(trashFolder=True)
     return render(request, 'login/trash.html', {'emails':content})
