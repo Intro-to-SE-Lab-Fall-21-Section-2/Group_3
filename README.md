@@ -26,6 +26,7 @@ Password: Firefox1234
 **Now to run the Email Client, the user will need to:**
 1. Before running, you must create migrations. Type "python3 manage.py makemigrations" and then "python3 manage.py migrate" into the command line
 2. Now to run it, go into the emailClient directory and type "python3 manage.py runserver" into the command line
+3. If you have done the following steps correctly, you should see this link in the command line http://127.0.0.1:8000/ that will bring you to the homepage of the email client!
 
 
 
